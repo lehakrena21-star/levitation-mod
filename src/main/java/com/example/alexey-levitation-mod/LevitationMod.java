@@ -33,21 +33,25 @@ public class LevitationMod {
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
-        // Проверка фазы, чтобы не запускать код дважды за тик
         if (event.phase != TickEvent.Phase.END) return;
 
         Minecraft mc = Minecraft.getInstance();
-        // Проверяем всё по цепочке, чтобы не было ошибок
-        if (mc.level != null && mc.player != null && levitateKey != null && levitateKey.isDown()) {
+        
+        // ПРОВЕРКА: Если мы в меню или игра не загружена — выходим
+        if (mc.level == null || mc.player == null || mc.screen != null) return;
+
+        // Вместо mc.isWindowActive() используем прямой опрос клавиатуры через GLFW
+        // Это сработает, даже если маппинги сломаны
+        long windowHandle = mc.getWindow().getWindow();
+        if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_X) == GLFW.GLFW_PRESS) {
             
             double r = 10.0;
             AABB area = mc.player.getBoundingBox().inflate(r);
             List<Entity> entities = mc.level.getEntities(mc.player, area);
 
             for (Entity entity : entities) {
-                if (entity instanceof LivingEntity living) {
+                if (entity instanceof LivingEntity living && entity != mc.player) {
                     Vec3 v = living.getDeltaMovement();
-                    // Подбрасываем вверх с силой 0.5
                     living.setDeltaMovement(v.x, 0.5, v.z);
                     living.hasImpulse = true;
                 }
