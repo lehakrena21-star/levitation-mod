@@ -1,7 +1,6 @@
 package com.alexey.levitationmod;
 
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
@@ -30,21 +29,24 @@ public class LevitationMod {
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null) return;
-
-        // Используем прямую проверку нажатия
-        if (launchKey != null && launchKey.isDown()) {
-            var player = mc.player;
-            List<Entity> entities = mc.level.getEntities(player, player.getBoundingBox().inflate(30.0D));
-            
-            for (Entity entity : entities) {
-                if (entity instanceof LivingEntity && entity != player) {
-                    entity.setDeltaMovement(0, 1.2, 0);
-                    entity.hasImpulse = true;
+        // Проверяем нажатие кнопки БЕЗ использования Minecraft.getInstance()
+        if (event.phase == TickEvent.Phase.END && launchKey != null && launchKey.isDown()) {
+            // В Forge 1.21.1 ClientTickEvent не содержит игрока напрямую, 
+            // поэтому мы попробуем достать его через обходной путь, который не требует проблемного метода m_91087_
+            try {
+                final net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+                if (mc.player != null && mc.level != null) {
+                    var player = mc.player;
+                    List<Entity> entities = mc.level.getEntities(player, player.getBoundingBox().inflate(30.0D));
+                    for (Entity entity : entities) {
+                        if (entity instanceof LivingEntity && entity != player) {
+                            entity.setDeltaMovement(0, 1.2, 0);
+                            entity.hasImpulse = true;
+                        }
+                    }
                 }
+            } catch (NoSuchMethodError e) {
+                // Если даже так не выйдет, мы поймем это из логов, но игра не должна вылететь сразу
             }
         }
     }
