@@ -33,30 +33,32 @@ public class LevitationMod {
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
+        // Используем фазу END и проверяем наличие игрока максимально просто
         if (event.phase == TickEvent.Phase.END) {
             Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null && levitateKey != null && levitateKey.isDown()) {
-                executeLevitation(mc);
+            if (mc != null && mc.player != null && levitateKey != null) {
+                if (levitateKey.isDown()) {
+                    applyLevitation(mc);
+                }
             }
         }
     }
 
-    private void executeLevitation(Minecraft mc) {
+    private void applyLevitation(Minecraft mc) {
         if (mc.level == null || mc.player == null) return;
 
-        // Радиус 15 блоков во все стороны
-        double r = 15.0;
-        AABB area = mc.player.getBoundingBox().inflate(r, r, r);
+        // Радиус поиска — 10 блоков вокруг игрока
+        double radius = 10.0;
+        AABB area = mc.player.getBoundingBox().inflate(radius);
         List<Entity> entities = mc.level.getEntities(mc.player, area);
 
         for (Entity entity : entities) {
-            if (entity instanceof LivingEntity living) {
-                // Устанавливаем четкую скорость вверх (0.5 — это заметный прыжок)
-                Vec3 currentMove = living.getDeltaMovement();
-                living.setDeltaMovement(currentMove.x, 0.5, currentMove.z);
-                
-                // Чтобы моб не "зависал" из-за гравитации сервера, 
-                // мы просто подталкиваем его каждый тик, пока нажата X
+            if (entity instanceof LivingEntity living && entity != mc.player) {
+                // Получаем текущее движение
+                Vec3 movement = living.getDeltaMovement();
+                // Устанавливаем вертикальную скорость 0.3 (заметный подъем)
+                living.setDeltaMovement(movement.x, 0.3, movement.z);
+                // Помечаем, что сущность получила импульс (важно для некоторых мобов)
                 living.hasImpulse = true;
             }
         }
