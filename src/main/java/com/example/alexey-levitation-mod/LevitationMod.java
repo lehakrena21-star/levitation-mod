@@ -1,31 +1,31 @@
 package com.alexey.levitationmod;
 
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.client.Minecraft;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import org.lwjgl.glfw.GLFW;
 import java.util.List;
 
 @Mod("levitationmod")
 public class LevitationMod {
-    public static final String MOD_ID = "levitationmod";
     private static KeyMapping launchKey;
 
     public LevitationMod() {
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setupClient);
+        var bus = FMLJavaModLoadingContext.get().getModEventBus();
+        bus.addListener(this::onKeyRegister);
         MinecraftForge.EVENT_BUS.register(this);
     }
 
-    private void setupClient(final FMLClientSetupEvent event) {
+    public void onKeyRegister(RegisterKeyMappingsEvent event) {
         launchKey = new KeyMapping("key.levitation.launch", GLFW.GLFW_KEY_X, "key.categories.misc");
+        event.register(launchKey);
     }
 
     @SubscribeEvent
@@ -42,10 +42,5 @@ public class LevitationMod {
                 }
             }
         }
-    }
-    
-    @SubscribeEvent
-    public static void onKeyRegister(RegisterKeyMappingsEvent event) {
-        event.register(launchKey);
     }
 }
