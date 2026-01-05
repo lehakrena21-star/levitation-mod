@@ -24,24 +24,28 @@ public class LevitationMod {
     }
 
     public void onKeyRegister(RegisterKeyMappingsEvent event) {
+        // Создаем кнопку X
         launchKey = new KeyMapping("key.levitation.launch", GLFW.GLFW_KEY_X, "key.categories.misc");
         event.register(launchKey);
     }
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
+        // Проверяем только в конце тика и только на клиенте
         if (event.phase == TickEvent.Phase.END) {
-            // Прямая проверка нажатия через сам объект launchKey
-            if (launchKey != null && launchKey.isDown()) {
-                Minecraft mc = Minecraft.getInstance();
-                if (mc.player != null && mc.level != null) {
-                    var player = mc.player;
-                    List<Entity> entities = mc.level.getEntities(player, player.getBoundingBox().inflate(30));
-                    for (Entity entity : entities) {
-                        if (entity instanceof LivingEntity) {
-                            entity.setDeltaMovement(0, 1.5, 0);
-                            entity.hasImpulse = true;
-                        }
+            Minecraft mc = Minecraft.getInstance();
+            
+            // Самая надежная проверка нажатия кнопки
+            if (launchKey != null && launchKey.isDown() && mc.player != null && mc.level != null) {
+                var player = mc.player;
+                // Ищем мобов вокруг игрока в радиусе 30 блоков
+                List<Entity> entities = mc.level.getEntities(player, player.getBoundingBox().inflate(30));
+                
+                for (Entity entity : entities) {
+                    if (entity instanceof LivingEntity) {
+                        // Подбрасываем вверх
+                        entity.setDeltaMovement(0, 1.5, 0);
+                        entity.hasImpulse = true;
                     }
                 }
             }
