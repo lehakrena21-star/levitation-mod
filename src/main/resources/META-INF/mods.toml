@@ -1,0 +1,10 @@
+modLoader="javafml"
+loaderVersion="[51,)"
+license="MIT"
+
+[[mods]]
+modId="alexey-levitation-mod"
+version="1.21.1"
+displayName="alexey-levitation-mod"
+authors="com.alexey.levitation"
+description="Press X to launch mobs into the sky!"
