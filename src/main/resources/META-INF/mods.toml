@@ -3,8 +3,8 @@ loaderVersion="[51,)"
 license="MIT"
 
 [[mods]]
-modId="alexey-levitation-mod"
-version="1.21.1"
-displayName="alexey-levitation-mod"
-authors="com.alexey.levitation"
+modId="levitationmod"
+version="1.0"
+displayName="Levitation Mod"
+authors="Alexey"
 description="Press X to launch mobs into the sky!"
