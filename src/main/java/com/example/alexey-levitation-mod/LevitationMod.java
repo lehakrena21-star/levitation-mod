@@ -33,32 +33,37 @@ public class LevitationMod {
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && Minecraft.getInstance().player != null) {
-            try {
-                if (levitateKey != null && levitateKey.isDown()) {
-                    executeLevitation();
+        // Безопасная проверка: не вызываем методы напрямую без проверки фазы
+        if (event.phase != TickEvent.Phase.END) return;
+
+        try {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc != null && mc.player != null && levitateKey != null) {
+                if (levitateKey.isDown()) {
+                    executeLevitation(mc);
                 }
-            } catch (NoSuchMethodError e) {
-                if (!errorLogged) {
-                    System.err.println("LevitationMod ERROR: Method isDown not found!");
-                    errorLogged = true;
-                }
+            }
+        } catch (Throwable t) {
+            if (!errorLogged) {
+                System.err.println("LevitationMod Critical Error: " + t.getMessage());
+                errorLogged = true;
             }
         }
     }
 
-    private void executeLevitation() {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null) return;
+    private void executeLevitation(Minecraft mc) {
+        try {
+            if (mc.player == null || mc.level == null) return;
 
-        double radius = 10.0;
-        AABB area = mc.player.getBoundingBox().inflate(radius);
-        List<Entity> entities = mc.level.getEntities(mc.player, area);
+            double radius = 10.0;
+            AABB area = mc.player.getBoundingBox().inflate(radius);
+            List<Entity> entities = mc.level.getEntities(mc.player, area);
 
-        for (Entity entity : entities) {
-            if (entity instanceof LivingEntity livingEntity && entity != mc.player) {
-                livingEntity.setDeltaMovement(livingEntity.getDeltaMovement().add(0, 0.2, 0));
+            for (Entity entity : entities) {
+                if (entity instanceof LivingEntity livingEntity && entity != mc.player) {
+                    livingEntity.setDeltaMovement(livingEntity.getDeltaMovement().add(0, 0.2, 0));
+                }
             }
-        }
+        } catch (Throwable ignored) {}
     }
 }
