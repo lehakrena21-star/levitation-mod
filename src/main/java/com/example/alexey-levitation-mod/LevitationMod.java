@@ -31,15 +31,17 @@ public class LevitationMod {
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
-            var mc = Minecraft.getInstance();
-            // Используем метод .isDown() вместо сломанного m_90857_
-            if (launchKey != null && launchKey.isDown() && mc.player != null) {
-                var player = mc.player;
-                List<Entity> entities = player.level().getEntities(player, player.getBoundingBox().inflate(30));
-                for (Entity entity : entities) {
-                    if (entity instanceof LivingEntity) {
-                        entity.setDeltaMovement(0, 1.5, 0);
-                        entity.hasImpulse = true;
+            // Прямая проверка нажатия через сам объект launchKey
+            if (launchKey != null && launchKey.isDown()) {
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.player != null && mc.level != null) {
+                    var player = mc.player;
+                    List<Entity> entities = mc.level.getEntities(player, player.getBoundingBox().inflate(30));
+                    for (Entity entity : entities) {
+                        if (entity instanceof LivingEntity) {
+                            entity.setDeltaMovement(0, 1.5, 0);
+                            entity.hasImpulse = true;
+                        }
                     }
                 }
             }
