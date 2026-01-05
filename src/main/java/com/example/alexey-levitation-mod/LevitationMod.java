@@ -31,30 +31,27 @@ public class LevitationMod {
         event.register(levitateKey);
     }
 
-    @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+   @SubscribeEvent
+public void onClientTick(TickEvent.ClientTickEvent event) {
+    // Проверяем только конец тика и наличие игрока
+    if (event.phase != TickEvent.Phase.END) return;
+    
+    Minecraft mc = Minecraft.getInstance();
+    if (mc.player == null || mc.level == null) return;
 
-        Minecraft mc = Minecraft.getInstance();
-        
-        // ПРОВЕРКА: Если мы в меню или игра не загружена — выходим
-        if (mc.level == null || mc.player == null || mc.screen != null) return;
+    // Полностью убираем проверку на активное окно (mc.isWindowActive)
+    // Оставляем только проверку клавиши. 
+    // Если окно не в фокусе, клавиша обычно и так не нажмется.
+    if (levitateKey != null && levitateKey.isDown()) {
+        double r = 10.0;
+        AABB area = mc.player.getBoundingBox().inflate(r);
+        List<Entity> entities = mc.level.getEntities(mc.player, area);
 
-        // Вместо mc.isWindowActive() используем прямой опрос клавиатуры через GLFW
-        // Это сработает, даже если маппинги сломаны
-        long windowHandle = mc.getWindow().getWindow();
-        if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_X) == GLFW.GLFW_PRESS) {
-            
-            double r = 10.0;
-            AABB area = mc.player.getBoundingBox().inflate(r);
-            List<Entity> entities = mc.level.getEntities(mc.player, area);
-
-            for (Entity entity : entities) {
-                if (entity instanceof LivingEntity living && entity != mc.player) {
-                    Vec3 v = living.getDeltaMovement();
-                    living.setDeltaMovement(v.x, 0.5, v.z);
-                    living.hasImpulse = true;
-                }
+        for (Entity entity : entities) {
+            if (entity instanceof LivingEntity living && entity != mc.player) {
+                Vec3 v = living.getDeltaMovement();
+                living.setDeltaMovement(v.x, 0.5, v.z);
+                living.hasImpulse = true;
             }
         }
     }
