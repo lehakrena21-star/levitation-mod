@@ -33,33 +33,24 @@ public class LevitationMod {
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
-        // Используем фазу END и проверяем наличие игрока максимально просто
-        if (event.phase == TickEvent.Phase.END) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc != null && mc.player != null && levitateKey != null) {
-                if (levitateKey.isDown()) {
-                    applyLevitation(mc);
+        // Проверка фазы, чтобы не запускать код дважды за тик
+        if (event.phase != TickEvent.Phase.END) return;
+
+        Minecraft mc = Minecraft.getInstance();
+        // Проверяем всё по цепочке, чтобы не было ошибок
+        if (mc.level != null && mc.player != null && levitateKey != null && levitateKey.isDown()) {
+            
+            double r = 10.0;
+            AABB area = mc.player.getBoundingBox().inflate(r);
+            List<Entity> entities = mc.level.getEntities(mc.player, area);
+
+            for (Entity entity : entities) {
+                if (entity instanceof LivingEntity living) {
+                    Vec3 v = living.getDeltaMovement();
+                    // Подбрасываем вверх с силой 0.5
+                    living.setDeltaMovement(v.x, 0.5, v.z);
+                    living.hasImpulse = true;
                 }
-            }
-        }
-    }
-
-    private void applyLevitation(Minecraft mc) {
-        if (mc.level == null || mc.player == null) return;
-
-        // Радиус поиска — 10 блоков вокруг игрока
-        double radius = 10.0;
-        AABB area = mc.player.getBoundingBox().inflate(radius);
-        List<Entity> entities = mc.level.getEntities(mc.player, area);
-
-        for (Entity entity : entities) {
-            if (entity instanceof LivingEntity living && entity != mc.player) {
-                // Получаем текущее движение
-                Vec3 movement = living.getDeltaMovement();
-                // Устанавливаем вертикальную скорость 0.3 (заметный подъем)
-                living.setDeltaMovement(movement.x, 0.3, movement.z);
-                // Помечаем, что сущность получила импульс (важно для некоторых мобов)
-                living.hasImpulse = true;
             }
         }
     }
