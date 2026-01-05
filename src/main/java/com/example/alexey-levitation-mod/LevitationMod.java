@@ -30,9 +30,11 @@ public class LevitationMod {
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && launchKey != null && launchKey.isDown()) {
-            var player = Minecraft.getInstance().player;
-            if (player != null && player.level() != null) {
+        if (event.phase == TickEvent.Phase.END) {
+            var mc = Minecraft.getInstance();
+            // Используем метод .isDown() вместо сломанного m_90857_
+            if (launchKey != null && launchKey.isDown() && mc.player != null) {
+                var player = mc.player;
                 List<Entity> entities = player.level().getEntities(player, player.getBoundingBox().inflate(30));
                 for (Entity entity : entities) {
                     if (entity instanceof LivingEntity) {
