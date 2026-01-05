@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'com.alexey'
-version = '1.1'
+version = '1.6'
 
 base {
     archivesName = 'levitation-mod'
@@ -36,4 +36,5 @@ tasks.named('jar', Jar).configure {
         ])
     }
 }
+
 
